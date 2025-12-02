@@ -10,15 +10,10 @@ use App\Models\User;
 
 class AuthController extends Controller
 {
-    // /**
-    //  * Create a new AuthController instance.
-    //  *
-    //  * @return void
-    //  */
-    // public function __construct()
-    // {
-    //     $this->middleware('auth:api', ['except' => ['login']]);
-    // }
+    public function __construct()
+    {
+        $this->middleware('auth:api', ['except' => ['login']]);
+    }
 
     public function register(Request $request)
     {
@@ -51,7 +46,12 @@ class AuthController extends Controller
 
         return $this->respondWithToken($token);
     }
-    // Logout user (invalidate token)
+
+    /**
+     * Logged Out user.
+     *
+     * @return void
+     */
     public function logout()
     {
         auth('api')->logout();
@@ -59,7 +59,11 @@ class AuthController extends Controller
         return response()->json(['message' => 'Successfully logged out']);
     }
 
-    // Refresh JWT token
+    /**
+     * Refresh Token
+     *
+     * @return void
+     */
     public function refresh()
     {
         return $this->respondWithToken(auth('api')->refresh());

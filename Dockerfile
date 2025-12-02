@@ -1,45 +1,40 @@
-FROM php:8.3-apache
+FROM php:8.4-apache
 
 WORKDIR /var/www/html
 
 # Enable Apache modules
 RUN a2enmod rewrite
 
-# Install system dependencies including extension dependencies
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     git curl libzip-dev zip unzip
 
-# Install PHP extensions with proper flags
+# Install PHP extensions
 RUN docker-php-ext-install pdo pdo_mysql zip
 
-# Install Redis extension (phpredis)
+# Install Redis extension
 RUN pecl install redis && docker-php-ext-enable redis
 
-# Copy Apache config from docker folder
+# Copy Apache config
 COPY apache/000-default.conf /etc/apache2/sites-available/000-default.conf
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy application
+#Copy application FIRST
 COPY . .
 
-# Set proper permissions BEFORE composer install
-RUN chown -R www-data:www-data /var/www/html \
+#THEN set ownership to www-data (Apache user)
+RUN chown -R www-data:www-data /var/www/html
+
+#Create directories that might be missing (like in .gitignore)
+RUN mkdir -p storage/framework/{sessions,views,cache} \
+    && mkdir -p bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-# Switch to www-data user for composer install
+#Install dependencies as www-data
 USER www-data
-
-# Install dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
-
-# Switch back to root for Apache
-USER root
-
-# Ensure Apache can write to storage
-RUN chown -R www-data:www-data /var/www/html/storage \
-    && chown -R www-data:www-data /var/www/html/bootstrap/cache
 
 EXPOSE 80
 
