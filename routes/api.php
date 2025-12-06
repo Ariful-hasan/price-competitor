@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -14,3 +15,9 @@ Route::prefix('auth')->group(function () {
         Route::post('refresh', [AuthController::class, 'refresh']);
     });
 });
+
+// Get all prices (paginated)
+Route::get('prices', [ProductController::class, 'index']);
+
+// Get a single price by ID
+Route::get('prices/{product_id}', [ProductController::class, 'show']);

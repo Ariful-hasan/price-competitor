@@ -2,95 +2,119 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use App\Models\User;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterUserRequest;
+use App\Http\Services\Auth\AuthService;
+use Illuminate\Auth\AuthenticationException;
+use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Http\JsonResponse;
 
 class AuthController extends Controller
 {
-    public function __construct()
+    public function __construct(public AuthService $userService)
     {
-        $this->middleware('auth:api', ['except' => ['login']]);
-    }
-
-    public function register(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'name'       => 'required|string|max:255',
-            'email'      => 'required|string|email|max:255|unique:users',
-            'password'   => 'required|string|min:6|confirmed',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        $user = User::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
-            'password' => bcrypt($request->password),
-        ]);
-
-        return response()->json(['message' => 'User registered successfully', 'user' => $user], 201);
-    }
-
-    public function login(Request $request)
-    {
-        $credentials = $request->only('email', 'password');
-
-        if (!$token = auth('api')->attempt($credentials)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-
-        return $this->respondWithToken($token);
+        $this->middleware('auth:api', ['except' => ['login', 'register']]);
     }
 
     /**
-     * Logged Out user.
+     * User Register function.
      *
-     * @return void
+     * @param RegisterUserRequest $request
+     * @return JsonResponse
      */
-    public function logout()
+    public function register(RegisterUserRequest $request): JsonResponse
     {
-        auth('api')->logout();
-
-        return response()->json(['message' => 'Successfully logged out']);
+        try {
+            $user = $this->userService->register($request->validated());
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'User registered successfully.',
+                'data' => $user,
+            ], Response::HTTP_CREATED);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
-     * Refresh Token
+     * User Login/Generate Token function.
+     *
+     * @param LoginRequest $request
+     * @return JsonResponse
+     */
+    public function login(LoginRequest $request): JsonResponse
+    {
+        try {
+            $token = $this->userService->login($request->validated());
+
+            return response()->json([
+                'success' => true,
+                'data'    => $token,
+            ], Response::HTTP_OK);
+        } catch (AuthenticationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], Response::HTTP_UNAUTHORIZED);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * User Logged Out function.
      *
      * @return void
      */
-    public function refresh()
+    public function logout(): JsonResponse
     {
-        return $this->respondWithToken(auth('api')->refresh());
+        try {
+            $this->userService->logout();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Successfully logged out.',
+            ], Response::HTTP_OK);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong, please try again.',
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
-    protected function respondWithToken($token)
+    /**
+     * Generate Refresh Token.
+     *
+     * @return void
+     */
+    public function refresh(): JsonResponse
     {
-        return response()->json([
-            'access_token' => $token,
-            'token_type'   => 'bearer',
-            'expires_in'   => auth('api')->factory()->getTTL() * 60,
-        ]);
+        try {
+            $refrshToken = $this->userService->refresh();
+
+            return response()->json([
+                'success' => true,
+                'data'    => $refrshToken,
+            ], Response::HTTP_OK);
+        }  catch (AuthenticationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], Response::HTTP_UNAUTHORIZED);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
-
-    // /**
-    //  * Get a JWT via given credentials.
-    //  *
-    //  * @return \Illuminate\Http\JsonResponse
-    //  */
-    // public function login()
-    // {
-    //     $credentials = request(['email', 'password']);
-
-    //     if (! $token = auth()->attempt($credentials)) {
-    //         return response()->json(['error' => 'Unauthorized'], 401);
-    //     }
-
-    //     return $this->respondWithToken($token);
-    // }
 }
