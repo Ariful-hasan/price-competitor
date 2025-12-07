@@ -8,8 +8,8 @@ use App\Http\Resources\ProductLowestPriceResource;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\Response;
 
 class ProductService
 {
@@ -34,12 +34,19 @@ class ProductService
 
     public function getLowestPriceProductById(int $productId): ProductLowestPriceResource
     {
-        $product = $this->repository->getProduct($productId);
-        
-        if (!$product) {
-            throw new ModelNotFoundException('No data found for this id.');
-        }
+        try {
+            return new ProductLowestPriceResource($this->repository->getProduct($productId));
+        } catch (\Throwable $th) {
+            Log::error('Failed to fetch product : ' . $th->getMessage(), [
+                'trace' => $th->getTraceAsString()
+            ]);
 
-        return new ProductLowestPriceResource($product);
+            $isNotFouud = $th instanceof ModelNotFoundException;
+
+            throw new Exception(
+                $isNotFouud ? 'Product not found.' : 'Unable to fetch the product list.',
+                $isNotFouud ? Response::HTTP_NOT_FOUND : Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
     }
 }

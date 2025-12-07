@@ -30,6 +30,6 @@ class ProductLowestPriceRepository
 
     public function getProduct(int $productId): ?ProductLowestPrice
     {
-        return ProductLowestPrice::where('product_id', $productId)->first();
+        return ProductLowestPrice::where('product_id', $productId)->firstOrFail();
     }
 }

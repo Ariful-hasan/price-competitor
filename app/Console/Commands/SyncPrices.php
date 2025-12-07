@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Http\Services\PriceSyncService;
+use App\Http\Services\Product\PriceSyncService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Console\Command;

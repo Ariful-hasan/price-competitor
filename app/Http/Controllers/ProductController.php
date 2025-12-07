@@ -19,11 +19,13 @@ class ProductController extends Controller
     public function index(): AnonymousResourceCollection|JsonResponse
     {
         try {
-            return $this->service->getLowestProductList();
+            return $this->service
+            ->getLowestProductList()
+            ->additional(['success' => true]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => $e->getMessage() ?? 'Something went wrong.',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -31,17 +33,16 @@ class ProductController extends Controller
     public function show(int $productId): JsonResource|JsonResponse
     {
         try {
-            return $this->service->getLowestPriceProductById($productId);
+            return $this->service
+            ->getLowestPriceProductById($productId)
+            ->additional(['success' => true]);
         } catch (\Exception $e) {
             return response()->json([
                     'success' => false,
-                    'message' => $e->getMessage(),
+                    'message' => $e->getMessage() ?? 'Something went wrong.',
                 ], 
-                $e instanceof ModelNotFoundException 
-                ? Response::HTTP_NOT_FOUND 
-                : Response::HTTP_INTERNAL_SERVER_ERROR
+                $e->getCode() ?? Response::HTTP_INTERNAL_SERVER_ERROR
             );
-            
         }
     }
 }

@@ -4,9 +4,9 @@ namespace App\Http\Factories;
 
 
 use App\Http\Contracts\ExtractProductPriceContract;
-use App\Http\Services\VersionOneProductExtractService;
-use App\Http\Services\VersionThreeProductExtractService;
-use App\Http\Services\VersionTwoProductExtractService;
+use App\Http\Services\Product\PriceExtractors\VersionOneProductExtractService;
+use App\Http\Services\Product\PriceExtractors\VersionThreeProductExtractService;
+use App\Http\Services\Product\PriceExtractors\VersionTwoProductExtractService;
 use Illuminate\Contracts\Container\Container;
 use InvalidArgumentException;
 

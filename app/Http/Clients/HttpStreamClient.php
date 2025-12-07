@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Services;
+namespace App\Http\Clients;
 
 use App\Http\Contracts\HttpStreamClientContract;
 use Exception;

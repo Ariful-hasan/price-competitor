@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterUserRequest;
 use App\Http\Services\Auth\AuthService;
-use Illuminate\Auth\AuthenticationException;
+use Exception;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Http\JsonResponse;
 
@@ -33,7 +33,7 @@ class AuthController extends Controller
                 'message' => 'User registered successfully.',
                 'data' => $user,
             ], Response::HTTP_CREATED);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
@@ -50,22 +50,17 @@ class AuthController extends Controller
     public function login(LoginRequest $request): JsonResponse
     {
         try {
-            $token = $this->userService->login($request->validated());
-
             return response()->json([
                 'success' => true,
-                'data'    => $token,
+                'data'    => $this->userService->login($request->validated()),
             ], Response::HTTP_OK);
-        } catch (AuthenticationException $e) {
+        } catch (Exception $e) {
             return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], Response::HTTP_UNAUTHORIZED);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                    'success' => false,
+                    'message' => $e->getMessage() ?? 'Something went wrong.'
+                ], 
+                $e->getCode() ?? Response::HTTP_INTERNAL_SERVER_ERROR
+            );
         }
     }
 
@@ -83,11 +78,13 @@ class AuthController extends Controller
                 'success' => true,
                 'message' => 'Successfully logged out.',
             ], Response::HTTP_OK);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong, please try again.',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                    'success' => false,
+                    'message' => $e->getMessage() ?? 'Something went wrong.'
+                ], 
+                $e->getCode() ?? Response::HTTP_INTERNAL_SERVER_ERROR
+            );
         }
     }
 
@@ -105,16 +102,13 @@ class AuthController extends Controller
                 'success' => true,
                 'data'    => $refrshToken,
             ], Response::HTTP_OK);
-        }  catch (AuthenticationException $e) {
+        } catch (Exception $e) {
             return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], Response::HTTP_UNAUTHORIZED);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                    'success' => false,
+                    'message' => $e->getMessage() ?? 'Something went wrong, please try again.'
+                ], 
+                $e->getCode() ?? Response::HTTP_INTERNAL_SERVER_ERROR
+            );
         }
     }
 }

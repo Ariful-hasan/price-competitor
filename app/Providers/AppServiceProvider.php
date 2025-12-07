@@ -2,8 +2,9 @@
 
 namespace App\Providers;
 
+use App\Http\Clients\HttpStreamClient;
 use App\Http\Contracts\HttpStreamClientContract;
-use App\Http\Services\HttpStreamClient;
+
 use Illuminate\Support\ServiceProvider;
 use Laravel\Passport\Passport;
 

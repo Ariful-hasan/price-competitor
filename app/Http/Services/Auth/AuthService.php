@@ -6,6 +6,7 @@ use App\Models\User;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Auth\AuthenticationException;
+use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 class AuthService
@@ -19,7 +20,7 @@ class AuthService
 
         } catch (Throwable $e) {
             Log::error('User registration failed: ' . $e->getMessage());
-
+            dd($e->getMessage());
             throw new Exception('Unable to register user.');
         }
     }
@@ -30,7 +31,7 @@ class AuthService
             $token = auth('api')->attempt($credentials);
             
             if (!$token) {
-                throw new AuthenticationException('Token is not generated.');
+                throw new AuthenticationException('Email or password is not match.');
             }
             
             return [
@@ -42,8 +43,13 @@ class AuthService
             Log::error('Login error: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString()
             ]);
+            
+            $isAuthException = $e instanceof AuthenticationException;
 
-            throw new \Exception('Unable to generate token.');
+            throw new \Exception(
+                $isAuthException ? $e->getMessage() : 'Unable to generate token.',
+                $isAuthException ? Response::HTTP_UNAUTHORIZED : Response::HTTP_INTERNAL_SERVER_ERROR
+            );
         }
     }
 
@@ -55,7 +61,7 @@ class AuthService
             Log::error('Login error: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString()
             ]);
-
+            
             throw new \Exception('Unable to logout.');
         }
     }
@@ -66,7 +72,7 @@ class AuthService
             $refeshToken = auth('api')->refresh();
             
             if (!$refeshToken) {
-                throw new AuthenticationException('Refresh Token is not generated.');
+                throw new AuthenticationException('User is not authenticated.');
             }
 
             return ['refresh_token' => $refeshToken];
@@ -74,8 +80,12 @@ class AuthService
             Log::error('Login error: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString()
             ]);
+            $isAuthException = $e instanceof AuthenticationException;
 
-            throw new \Exception('Unable to generate refresh token.');
+            throw new \Exception(
+                $isAuthException ? $e->getMessage() : 'Unable to generate refresh token.',
+                $isAuthException ? Response::HTTP_UNAUTHORIZED : Response::HTTP_INTERNAL_SERVER_ERROR
+            );
         }
     }
 }
