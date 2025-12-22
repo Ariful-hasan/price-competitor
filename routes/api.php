@@ -16,8 +16,8 @@ Route::prefix('auth')->group(function () {
     });
 });
 
-// Get all prices (paginated)
-Route::get('prices', [ProductController::class, 'index']);
+// Get all products (paginated)
+Route::get('products', [ProductController::class, 'index']);
 
-// Get a single price by ID
-Route::get('prices/{product_id}', [ProductController::class, 'show']);
+// Get a single product by ID
+Route::get('products/{product_id}', [ProductController::class, 'show']);
