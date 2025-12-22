@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Services\Product;
+namespace App\Http\Services\PriceSync;
 
 
 use App\Http\Factories\ProductPricesExtractorFactory;
@@ -29,7 +29,7 @@ class PriceSyncService
 
     /**
      * Fetch All competitor prices.
-     *
+     * 
      * @param array $fetchUrls
      * @param Carbon $fetchAt
      * @return void
@@ -52,9 +52,9 @@ class PriceSyncService
 
     /**
      * Fetch prices through HttpStream.
-     *
+     * 
      * @param array $config
-     * @return array
+     * @return SyncProductPriceDTO|null
      */
     private function fetchAndCalculatePrices(array $config): ?SyncProductPriceDTO
     {
@@ -66,12 +66,12 @@ class PriceSyncService
 
     /**
      * Process a stream to extract product prices.
-     *
+     * 
      * @param mixed $stream
      * @param ExtractProductPriceContract $extractor
      * @param array $config
-     * @return array
      * @throws InvalidArgumentException
+     * @return SyncProductPriceDTO|null
      */
     private function processStream(mixed $stream, ExtractProductPriceContract $extractor, array $config): ?SyncProductPriceDTO
     {
@@ -96,10 +96,10 @@ class PriceSyncService
 
     /**
      * Calculate the lowest price in cache.
-     *
-     * @param integer $productId
-     * @param array $item
-     * @return array
+     * 
+     * @param int $productId
+     * @param SyncProductPriceDTO $dto
+     * @return SyncProductPriceDTO
      */
     private function calculateProductLowestPrice(int $productId, SyncProductPriceDTO $dto): SyncProductPriceDTO
     {
@@ -110,7 +110,7 @@ class PriceSyncService
         if (!$data) {
             Cache::set(static::CACHE_KEY . $productId, serialize($dto), static::CACHE_TTL);
 
-            return $$dto;
+            return $dto;
         }
 
         if ($data->price > $dto->price) {

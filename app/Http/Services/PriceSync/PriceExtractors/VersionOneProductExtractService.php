@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Services\Product\PriceExtractors;
+namespace App\Http\Services\PriceSync\PriceExtractors;
 
 use App\Http\Contracts\ExtractProductPriceContract;
 use App\Http\DTOs\SyncProductPriceDTO;
