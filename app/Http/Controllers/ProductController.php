@@ -13,7 +13,7 @@ class ProductController extends Controller
 {
     public function __construct(private ProductService  $service)
     {
-        $this->middleware('auth:api');
+        
     }
 
     public function index(): AnonymousResourceCollection|JsonResponse
