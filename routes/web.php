@@ -28,7 +28,7 @@ Route::middleware(['throttle:public'])->group(function () {
             'id' => "123",
             'competitor_data' => [
                 ['name' => 'Metro', 'amount' => 20.09],
-                ['name' => 'Kaufland', 'amount' => 16.99],
+                ['name' => 'Kaufland', 'amount' => 15.99],
                 ['name' => 'Aldi', 'amount' => 17.39],
             ]
         ]);
