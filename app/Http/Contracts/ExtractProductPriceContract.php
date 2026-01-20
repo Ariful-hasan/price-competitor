@@ -6,5 +6,5 @@ use App\Http\DTOs\SyncProductPriceDTO;
 
 interface ExtractProductPriceContract
 {
-    public function extractProduct(array $data): SyncProductPriceDTO;
+    public function extractProduct(array $data, int $productId): SyncProductPriceDTO;
 }

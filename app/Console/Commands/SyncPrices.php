@@ -2,10 +2,12 @@
 
 namespace App\Console\Commands;
 
+use App\Http\Actions\SyncProductPriceStream;
 use App\Http\Services\PriceSync\PriceSyncService;
 use Carbon\Carbon;
-use Exception;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class SyncPrices extends Command
 {
@@ -29,15 +31,19 @@ class SyncPrices extends Command
      * @param PriceSyncService $priceSyncService
      * @return void
      */
-    public function handle(PriceSyncService $priceSyncService): void
+    public function handle(): void
     {
-        try {
-            $this->info('Start Price Synchronizing.');
-            $priceSyncService->syncAllPrices(config('competitor-apis'), Carbon::now());
-            $this->info('Price sync completed successfully.');
-        } catch (Exception $e) {
-            $this->error("Sync failed: {$e->getMessage()}");
-            
+        $this->info('Start Price Synchronizing.');
+        $fetchAt = Carbon::now();
+
+        foreach (config('competitor-apis') as $key) {
+            try {
+                app(SyncProductPriceStream::class)($key, $fetchAt);
+                $this->info('Price sync completed successfully.');
+            } catch (Throwable $th) {
+                Log::error("Sync failed for Product {$key['product_id']}: {$th->getMessage()}");
+                $this->error("Sync failed: {$th->getMessage()}");
+            }
         }
     }
 }
