@@ -14,7 +14,7 @@ interface ProductLowestPriceRepositoryContract
 
     public function getProductList(): LengthAwarePaginator;
 
-    public function saveLowestPrice(int $productId, string $vendorName, float $price, Carbon $fetchAt) : void;
+    public function saveLowestPrice(int $productId, string $vendorName, float $price, Carbon $fetchAt, bool $isCacheOnly = false) : ProductLowestPrice;
 }
 
 
