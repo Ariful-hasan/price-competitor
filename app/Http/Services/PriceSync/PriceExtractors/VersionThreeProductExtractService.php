@@ -7,11 +7,12 @@ use App\Http\DTOs\SyncProductPriceDTO;
 
 class VersionThreeProductExtractService implements ExtractProductPriceContract
 {
-    public function extractProduct(array $data): SyncProductPriceDTO
+    public function extractProduct(array $data, int $productId): SyncProductPriceDTO
     {
         return new SyncProductPriceDTO(
             vendorName: $data['name'],
-            price: (float)$data['pricing']?->current
+            price: (float)$data['pricing']?->current,
+            productId: $productId
         );
     }
 }

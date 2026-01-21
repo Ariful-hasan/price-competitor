@@ -21,8 +21,20 @@ class HttpStreamClient implements HttpStreamClientContract
         $this->retries = config("services.http_stream.retries");
     }
 
+    
     /**
-     * @return resource|null
+     * Stream the response body from a given URL using HTTP with retry and timeout options.
+     *
+     * Initiates a streamed HTTP GET request to the provided URL. Returns a raw stream resource 
+     * suitable for consumption by a streaming JSON parser or similar use case. 
+     * Handles network and HTTP errors by throwing meaningful HttpException instances.
+     *
+     * @param string $url The URL from which to stream content.
+     * 
+     * @return resource The detached stream resource handle for the response body.
+     *
+     * @throws \Symfony\Component\HttpKernel\Exception\HttpException
+     *         If there's a timeout, HTTP error, or other network/streaming failure.
      */
     public function stream(string $url): mixed
     {
