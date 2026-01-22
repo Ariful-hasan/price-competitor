@@ -24,22 +24,24 @@ class CachedProductLowestPriceRepository implements ProductLowestPriceRepository
         float $price, 
         Carbon $fetchAt,
         bool $isCacheOnly = false
-    ) : void
+    ) : ProductLowestPrice
     {
         // Update the cache so the next 'getProduct' call is fresh
-        Cache::put(self::CACHE_KEY . $productId, [
+        $product = ProductLowestPrice::make([
             'product_id' => $productId,
+            'vendor_name' => $vendorName,
             'price' => $price,
-            'vendor_name' => $vendorName
-            ],
-            self::CACHE_TTL
-        );
+            'fetched_at' => $fetchAt,
+        ]);
+        $product->updateTimestamps();
 
         if (!$isCacheOnly) {
-             $this->repository->saveLowestPrice($productId, $vendorName, $price, $fetchAt);
+            $product = $this->repository->saveLowestPrice($productId, $vendorName, $price, $fetchAt);
         }
 
-        //return $product;
+        Cache::put(self::CACHE_KEY . $productId, $product, self::CACHE_TTL);
+        
+        return $product;
     }
 
     public function getProductList(): LengthAwarePaginator
