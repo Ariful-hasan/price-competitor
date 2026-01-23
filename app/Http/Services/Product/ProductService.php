@@ -3,18 +3,20 @@
 
 namespace App\Http\Services\Product;
 
-use App\Http\Repositories\ProductLowestPriceRepository;
+use App\Http\Contracts\ProductLowestPriceRepositoryContract;
+use App\Http\Contracts\ProductServiceContract;
 use App\Http\Resources\ProductLowestPriceResource;
+use App\Models\ProductLowestPrice;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
-class ProductService
+class ProductService implements ProductServiceContract
 {
 
-    public function __construct(private ProductLowestPriceRepository $repository)
+    public function __construct(private ProductLowestPriceRepositoryContract $repository)
     {
         
     }
@@ -48,5 +50,16 @@ class ProductService
                 $isNotFouud ? Response::HTTP_NOT_FOUND : Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
+    }
+
+    public function storeLowestPriceProduct(array $data): ProductLowestPrice
+    {
+        return $this->repository->saveLowestPrice(
+            $data['product_id'],
+            $data['vendor_name'],
+            $data['price'],
+            $data['fetch_at'],
+            false
+        );
     }
 }
