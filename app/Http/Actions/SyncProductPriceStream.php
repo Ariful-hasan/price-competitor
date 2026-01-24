@@ -3,9 +3,9 @@
 namespace App\Http\Actions;
 
 use App\Http\Contracts\HttpStreamClientContract;
+use App\Http\Contracts\ProductLowestPriceRepositoryContract;
 use App\Http\DTOs\SyncProductPriceDTO;
 use App\Http\Factories\ProductPricesExtractorFactory;
-use App\Http\Repositories\ProductLowestPriceRepository;
 use Carbon\Carbon;
 use \JsonMachine\Items;
 
@@ -21,7 +21,7 @@ class SyncProductPriceStream
     public function __construct(
         private readonly HttpStreamClientContract $httpClient,
         public readonly ProductPricesExtractorFactory $productPricesExtractorFactory,
-        private readonly ProductLowestPriceRepository $repository
+        private readonly ProductLowestPriceRepositoryContract $repository
     ) {}
 
     
@@ -86,7 +86,9 @@ class SyncProductPriceStream
      */
     public function persistFinalResult(Carbon $fetchAt): void
     {
-        if (!$this->lowestInStream) {
+        if (!$this->lowestInStream || $this->repository->getProduct(
+            $this->lowestInStream->productId
+        )?->price <= $this->lowestInStream->price) {
             return;
         }
 
@@ -94,7 +96,8 @@ class SyncProductPriceStream
             $this->lowestInStream->productId, 
             $this->lowestInStream->vendorName, 
             $this->lowestInStream->price, 
-            $fetchAt
+            $fetchAt,
+            true
         );
 
         // Reset for the next stream
