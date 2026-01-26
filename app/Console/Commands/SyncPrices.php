@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Http\Actions\SyncProductPriceStream;
+use App\Http\Contracts\ProductServiceContract;
 use App\Http\Services\PriceSync\PriceSyncService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -31,19 +32,38 @@ class SyncPrices extends Command
      * @param PriceSyncService $priceSyncService
      * @return void
      */
-    public function handle(): void
+    public function handle(ProductServiceContract $productService): void
     {
         $this->info('Start Price Synchronizing.');
         $fetchAt = Carbon::now();
+        $productIds = [];
 
+        /**
+         * store product prices to cache
+         */
         foreach (config('competitor-apis') as $key) {
             try {
                 app(SyncProductPriceStream::class)($key, $fetchAt);
-                $this->info('Price sync completed successfully.');
+                $productIds[] = $key['product_id'];
             } catch (Throwable $th) {
                 Log::error("Sync failed for Product {$key['product_id']}: {$th->getMessage()}");
                 $this->error("Sync failed: {$th->getMessage()}");
             }
         }
+        
+        /**
+         * store lowest price product to database
+         */
+        foreach (array_unique($productIds) as $productId) {
+            $product = $productService->getLowestPriceProductById($productId);
+            $productService->storeLowestPriceProduct([
+                'product_id' => $product->product_id,
+                'vendor_name' => $product->vendor_name,
+                'price' => $product->price,
+                'fetch_at' => $fetchAt,
+            ]);
+        }
+
+        $this->info('Price sync completed successfully.');
     }
 }
