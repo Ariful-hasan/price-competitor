@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use App\Http\Actions\SyncProductPriceStream;
 use App\Http\Contracts\ProductServiceContract;
-use App\Http\Services\PriceSync\PriceSyncService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -28,9 +27,6 @@ class SyncPrices extends Command
 
     /**
      * Execute the console command.
-     *
-     * @param PriceSyncService $priceSyncService
-     * @return void
      */
     public function handle(ProductServiceContract $productService): void
     {
@@ -50,7 +46,7 @@ class SyncPrices extends Command
                 $this->error("Sync failed: {$th->getMessage()}");
             }
         }
-        
+
         /**
          * store lowest price product to database
          */
