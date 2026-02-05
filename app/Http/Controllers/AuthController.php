@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterUserRequest;
 use App\Http\Services\Auth\AuthService;
 use Exception;
-use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
 {
@@ -19,15 +18,12 @@ class AuthController extends Controller
 
     /**
      * User Register function.
-     *
-     * @param RegisterUserRequest $request
-     * @return JsonResponse
      */
     public function register(RegisterUserRequest $request): JsonResponse
     {
         try {
             $user = $this->userService->register($request->validated());
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'User registered successfully.',
@@ -43,22 +39,19 @@ class AuthController extends Controller
 
     /**
      * User Login/Generate Token function.
-     *
-     * @param LoginRequest $request
-     * @return JsonResponse
      */
     public function login(LoginRequest $request): JsonResponse
     {
         try {
             return response()->json([
                 'success' => true,
-                'data'    => $this->userService->login($request->validated()),
+                'data' => $this->userService->login($request->validated()),
             ], Response::HTTP_OK);
         } catch (Exception $e) {
             return response()->json([
-                    'success' => false,
-                    'message' => $e->getMessage() ?? 'Something went wrong.'
-                ], 
+                'success' => false,
+                'message' => $e->getMessage() ?? 'Something went wrong.',
+            ],
                 $e->getCode() ?? Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
@@ -80,9 +73,9 @@ class AuthController extends Controller
             ], Response::HTTP_OK);
         } catch (Exception $e) {
             return response()->json([
-                    'success' => false,
-                    'message' => $e->getMessage() ?? 'Something went wrong.'
-                ], 
+                'success' => false,
+                'message' => $e->getMessage() ?? 'Something went wrong.',
+            ],
                 $e->getCode() ?? Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
@@ -100,13 +93,13 @@ class AuthController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data'    => $refrshToken,
+                'data' => $refrshToken,
             ], Response::HTTP_OK);
         } catch (Exception $e) {
             return response()->json([
-                    'success' => false,
-                    'message' => $e->getMessage() ?? 'Something went wrong, please try again.'
-                ], 
+                'success' => false,
+                'message' => $e->getMessage() ?? 'Something went wrong, please try again.',
+            ],
                 $e->getCode() ?? Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }

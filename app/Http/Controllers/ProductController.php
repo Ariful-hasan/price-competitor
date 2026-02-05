@@ -8,20 +8,16 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Symfony\Component\HttpFoundation\Response;
 
-
 class ProductController extends Controller
 {
-    public function __construct(private ProductServiceContract  $service)
-    {
-        
-    }
+    public function __construct(private ProductServiceContract $service) {}
 
     public function index(): AnonymousResourceCollection|JsonResponse
     {
         try {
             return $this->service
-            ->getLowestProductList()
-            ->additional(['success' => true]);
+                ->getLowestProductList()
+                ->additional(['success' => true]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -34,13 +30,13 @@ class ProductController extends Controller
     {
         try {
             return $this->service
-            ->getLowestPriceProductById($productId)
-            ->additional(['success' => true]);
+                ->getLowestPriceProductById($productId)
+                ->additional(['success' => true]);
         } catch (\Exception $e) {
             return response()->json([
-                    'success' => false,
-                    'message' => $e->getMessage() ?? 'Something went wrong.',
-                ], 
+                'success' => false,
+                'message' => $e->getMessage() ?? 'Something went wrong.',
+            ],
                 $e->getCode() ?? Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
