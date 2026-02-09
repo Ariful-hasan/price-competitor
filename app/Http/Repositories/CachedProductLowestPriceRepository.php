@@ -11,21 +11,18 @@ use Illuminate\Support\Facades\Cache;
 class CachedProductLowestPriceRepository implements ProductLowestPriceRepositoryContract
 {
     private const string CACHE_KEY = 'product_lowest_price:';
+
     private const int CACHE_TTL = 3600;
 
-    public function __construct(private readonly ProductLowestPriceRepository $repository)
-    {
-        
-    }
+    public function __construct(private readonly ProductLowestPriceRepository $repository) {}
 
     public function saveLowestPrice(
-        int $productId, 
+        int $productId,
         string $vendorName,
-        float $price, 
+        float $price,
         Carbon $fetchAt,
         bool $isCacheOnly = false
-    ) : ProductLowestPrice
-    {
+    ): ProductLowestPrice {
         // Update the cache so the next 'getProduct' call is fresh
         $product = ProductLowestPrice::make([
             'product_id' => $productId,
@@ -35,12 +32,12 @@ class CachedProductLowestPriceRepository implements ProductLowestPriceRepository
         ]);
         $product->updateTimestamps();
 
-        if (!$isCacheOnly) {
+        if (! $isCacheOnly) {
             $product = $this->repository->saveLowestPrice($productId, $vendorName, $price, $fetchAt);
         }
 
-        Cache::put(self::CACHE_KEY . $productId, $product, self::CACHE_TTL);
-        
+        Cache::put(self::CACHE_KEY.$productId, $product, self::CACHE_TTL);
+
         return $product;
     }
 
@@ -52,10 +49,10 @@ class CachedProductLowestPriceRepository implements ProductLowestPriceRepository
     public function getProduct(int $productId): ProductLowestPrice
     {
         return Cache::remember(
-            self::CACHE_KEY . $productId, 
-            self::CACHE_TTL, 
+            self::CACHE_KEY.$productId,
+            self::CACHE_TTL,
             function () use ($productId) {
-            return $this->repository->getProduct($productId);
-        });
+                return $this->repository->getProduct($productId);
+            });
     }
 }

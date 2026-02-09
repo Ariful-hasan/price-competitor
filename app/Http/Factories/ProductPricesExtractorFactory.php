@@ -2,7 +2,6 @@
 
 namespace App\Http\Factories;
 
-
 use App\Http\Contracts\ExtractProductPriceContract;
 use App\Http\Services\PriceSync\PriceExtractors\VersionOneProductExtractService;
 use App\Http\Services\PriceSync\PriceExtractors\VersionThreeProductExtractService;
@@ -12,14 +11,12 @@ use InvalidArgumentException;
 
 class ProductPricesExtractorFactory
 {
-    public function __construct(private Container $container) 
-    {
-    }
+    public function __construct(private Container $container) {}
 
     public function make(string $pointer): ExtractProductPriceContract
     {
-        
-        return match($pointer) {
+
+        return match ($pointer) {
             '/prices' => $this->container->make(VersionOneProductExtractService::class),
             '/competitor_data' => $this->container->make(VersionTwoProductExtractService::class),
             '/competitor_data/price_comparison' => $this->container->make(VersionThreeProductExtractService::class),

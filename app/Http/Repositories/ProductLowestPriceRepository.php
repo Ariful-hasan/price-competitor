@@ -9,7 +9,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class ProductLowestPriceRepository implements ProductLowestPriceRepositoryContract
 {
-    public function saveLowestPrice(int $productId, string $vendorName, float $price, Carbon $fetchAt, bool $isCacheOnly = false) : ProductLowestPrice
+    public function saveLowestPrice(int $productId, string $vendorName, float $price, Carbon $fetchAt, bool $isCacheOnly = false): ProductLowestPrice
     {
         return ProductLowestPrice::updateOrCreate(
             ['product_id' => $productId],
@@ -17,7 +17,7 @@ class ProductLowestPriceRepository implements ProductLowestPriceRepositoryContra
                 'product_id' => $productId,
                 'vendor_name' => $vendorName,
                 'price' => $price,
-                'fetched_at' => $fetchAt
+                'fetched_at' => $fetchAt,
             ]
         );
     }
