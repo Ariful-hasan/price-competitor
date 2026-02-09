@@ -4,9 +4,9 @@ services:
   web:
     image: nginx:alpine
     container_name: web
-    restart: unless-storage
+    restart: unless-stopped
     ports:
-      - "8000:80"
+      - "${HTTP_PORT:-8000}:80"
     depends_on:
       app:
         condition: service_healthy
@@ -16,50 +16,87 @@ services:
     environment:
       - PHP_FPM_NGINX_MAX_REQUESTS
       - PHP_FPM_PORT
+      - HTTP_PORT
     networks:
       - app-network
 
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        - USER_ID=${USER_ID}
+        - GROUP_ID=${GROUP_ID}
+    container_name: app
+    restart: unless-stopped
     ports:
       - "8080:80"
     volumes:
       - .:/var/www/html
-      - ./storage:/var/www/html/storage
     environment:
-      - APP_ENV=local
-      - APP_DEBUG=true
-      - DB_HOST=database
-      - REDIS_HOST=redis
+      - APP_ENV
+      - APP_DEBUG
+      - DB_HOST
+      - DB_CONNECTION
+      - DB_PORT
+      - DB_DATABASE
+      - DB_USERNAME
+      - DB_PASSWORD
+      - REDIS_HOST
+      - REDIS_PASSWORD
+      - REDIS_PORT
+      - PHP_FPM_MAX_CHILDREN
+      - PHP_FPM_MAX_REQUESTS
+      - PHP_FPM_PORT 
+      - PHP_FPM_NGINX_MAX_REQUESTS
+      - PHP_OPCACHE_VALIDATE_TIMESTAMPS
+      - PHP_OPCACHE_REVALIDATE_FREQ 
     depends_on:
-      - database
-      - redis
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - app-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      test: ["CMD", "cgi-fcgi", "-bind", "-connect", "127.0.0.1:${PHP_FPM_PORT}"]
       interval: 30s
       timeout: 10s
       retries: 5
 
   database:
     image: mysql:8.0
+    container_name: db
+    restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: laravel
+      - MYSQL_ROOT_PASSWORD
+      - MYSQL_DATABASE
     ports:
-      - "3306:3306"
+      - "${DB_PORT:-3306}:3306"
     volumes:
-      - dbdata:/var/lib/mysql
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - app-network 
   
   redis:
     image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT}:6379"
     volumes:
-      - redisdata:/data
+      - redis_data:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - app-network
 
@@ -68,5 +105,5 @@ networks:
     driver: bridge
 
 volumes:
-  dbdata:
-  redisdata:
+  db_data:
+  redis_data:
