@@ -11,7 +11,7 @@ class VersionThreeProductExtractService implements ExtractProductPriceContract
     {
         return new SyncProductPriceDTO(
             vendorName: $data['name'],
-            price: (float)$data['pricing']?->current,
+            price: (float) $data['pricing']?->current,
             productId: $productId
         );
     }
