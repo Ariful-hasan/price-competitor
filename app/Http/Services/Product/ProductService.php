@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Http\Services\Product;
 
 use App\Http\Contracts\ProductLowestPriceRepositoryContract;
@@ -15,19 +14,15 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ProductService implements ProductServiceContract
 {
-
-    public function __construct(private ProductLowestPriceRepositoryContract $repository)
-    {
-        
-    }
+    public function __construct(private ProductLowestPriceRepositoryContract $repository) {}
 
     public function getLowestProductList(): AnonymousResourceCollection
     {
         try {
             return ProductLowestPriceResource::collection($this->repository->getProductList());
         } catch (\Throwable $th) {
-            Log::error('Failed to fetch product list: ' . $th->getMessage(), [
-                'trace' => $th->getTraceAsString()
+            Log::error('Failed to fetch product list: '.$th->getMessage(), [
+                'trace' => $th->getTraceAsString(),
             ]);
 
             throw new Exception('Unable to fetch the product list.');
@@ -39,8 +34,8 @@ class ProductService implements ProductServiceContract
         try {
             return new ProductLowestPriceResource($this->repository->getProduct($productId));
         } catch (\Throwable $th) {
-            Log::error('Failed to fetch product : ' . $th->getMessage(), [
-                'trace' => $th->getTraceAsString()
+            Log::error('Failed to fetch product : '.$th->getMessage(), [
+                'trace' => $th->getTraceAsString(),
             ]);
 
             $isNotFouud = $th instanceof ModelNotFoundException;
