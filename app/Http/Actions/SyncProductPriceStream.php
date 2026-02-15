@@ -27,18 +27,10 @@ class SyncProductPriceStream
     ) {}
 
     /**
-     * Streams and processes product prices from a remote JSON feed, tracking the lowest price found.
-     *
-     * This method streams a potentially large JSON feed from the URL provided in the $config array,
-     * extracts product price information, identifies the lowest price during the stream, and
-     * persists the result using the repository. The extraction logic is delegated to an extractor
-     * built by the ProductPricesExtractorFactory based on the supplied JSON pointer.
-     *
-     * @param  array  $config  Configuration for the stream, including:
-     *                         - 'url': The URL to fetch the remote feed from.
-     *                         - 'json_pointer': JSON pointer path for extractor.
-     *                         - 'product_id': The product ID to filter/extract.
-     * @param  Carbon  $fetchAt  The timestamp to associate with the fetch operation.
+     * Summary of __invoke
+     * @param array $config
+     * @param Carbon $fetchAt
+     * @return void
      */
     public function __invoke(array $config, Carbon $fetchAt): void
     {
@@ -55,13 +47,9 @@ class SyncProductPriceStream
     }
 
     /**
-     * Updates the currently tracked lowest price DTO found during this stream.
-     *
-     * If no lowest price has been found yet, or if the given DTO has a lower price
-     * than the current lowest, this replaces the stored DTO. Otherwise, no changes
-     * are made.
-     *
-     * @param  SyncProductPriceDTO  $dto  The DTO representing a product's price to be considered.
+     * Summary of updateLocalLowest
+     * @param SyncProductPriceDTO $dto
+     * @return void
      */
     public function updateLocalLowest(SyncProductPriceDTO $dto): void
     {
@@ -71,13 +59,9 @@ class SyncProductPriceStream
     }
 
     /**
-     * Persists the lowest price product found during the current stream.
-     *
-     * If a lowest price product was found, this method saves it using the repository,
-     * associating it with the given fetch timestamp. After persisting, the local
-     * reference to the lowest price product is cleared in preparation for the next stream.
-     *
-     * @param  Carbon  $fetchAt  The timestamp indicating when the prices were fetched.
+     * Summary of persistFinalResult
+     * @param Carbon $fetchAt
+     * @return void
      */
     public function persistFinalResult(Carbon $fetchAt): void
     {
